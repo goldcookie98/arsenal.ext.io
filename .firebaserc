@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "default": "arsenal-tracker-74dd7"
+  },
+  "targets": {
+    "linkyvault": {
+      "hosting": {}
+    }
+  },
+  "etags": {}
+}
