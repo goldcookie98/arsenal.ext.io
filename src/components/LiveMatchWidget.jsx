@@ -7,7 +7,7 @@ const LiveMatchWidget = () => {
     useEffect(() => {
         const updateTimer = () => {
             const now = new Date();
-            const kickoff = new Date(2026, 2, 14, 17, 30, 0, 0); // March 14, 2026, 17:30
+            const kickoff = new Date(2026, 3, 19, 16, 30, 0, 0); // April 19, 16:30
             const diff = kickoff - now;
 
             if (diff <= 0) {
@@ -37,10 +37,10 @@ const LiveMatchWidget = () => {
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '350px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', overflow: 'hidden' }}>
                 {timeLeft.isTime ? (
                     <iframe
-                        title="Arsenal vs Everton Player"
+                        title="Manchester City vs. Arsenal Player"
                         marginHeight="0"
                         marginWidth="0"
-                        src="https://embedsports.top/embed/admin/ppv-arsenal-vs-everton/1"
+                        src="https://embedsports.top/embed/admin/ppv-manchester-city-vs-arsenal/1"
                         scrolling="no"
                         allowFullScreen={true}
                         allow="encrypted-media; picture-in-picture;"
@@ -58,7 +58,7 @@ const LiveMatchWidget = () => {
                             <CountdownUnit value={timeLeft.seconds} label="Secs" color="var(--color-crimson)" />
                         </div>
                         <p style={{ color: 'var(--text-muted)', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                            <Clock size={16} /> Stream unlocks at 17:30 — Mar 14
+                            <Clock size={16} /> Stream unlocks at 16:30 — Apr 19
                         </p>
                     </div>
                 )}

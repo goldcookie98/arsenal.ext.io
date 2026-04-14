@@ -6,13 +6,13 @@ const Hero = () => {
     const [showStream, setShowStream] = useState(false);
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, isTime: false });
 
-    // Set kickoff time (07/03/2026 at 12:15)
+    // Set kickoff time (19/04/2026 at 16:30)
     useEffect(() => {
         const updateTimer = () => {
             const now = new Date();
 
-            // Create a Date object for March 14, 2026 at 17:30
-            const kickoff = new Date(2026, 2, 14, 17, 30, 0, 0); // Month is 0-indexed
+            // Create a Date object for April 19, 2026 at 16:30
+            const kickoff = new Date(2026, 3, 19, 16, 30, 0, 0); // Month 3 is April
 
             const diff = kickoff - now;
 
@@ -98,9 +98,9 @@ const Hero = () => {
 
                         {timeLeft.isTime ? (
                             <iframe
-                                title="Arsenal vs Everton Player"
+                                title="Manchester City vs. Arsenal Player"
                                 style={{ width: '100%', height: '100%', border: 'none' }}
-                                src="https://embedsports.top/embed/admin/ppv-arsenal-vs-everton/1"
+                                src="https://embedsports.top/embed/admin/ppv-manchester-city-vs-arsenal/1"
                                 scrolling="no"
                                 allowFullScreen={true}
                                 allow="encrypted-media; picture-in-picture;"
@@ -113,7 +113,7 @@ const Hero = () => {
                                 <Lock size={48} color="var(--color-crimson)" style={{ opacity: 0.8 }} />
                                 <h2 style={{ fontSize: '2.5rem', color: 'white' }}>Stream Starts Soon</h2>
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', maxWidth: '500px', margin: '0 auto' }}>
-                                    The live broadcast will automatically unlock right here when the match begins at 17:30 on March 14th.
+                                    The live broadcast will automatically unlock right here when the match begins at 16:30 on April 19th.
                                 </p>
 
                                 <div style={{
@@ -186,17 +186,39 @@ const Hero = () => {
                     borderRadius: '50%',
                     boxShadow: '0 0 10px var(--color-crimson)'
                 }}></span>
-                Next Match — Sat 14 Mar
+                Next Match — Sun 19 Apr
+            </div>
+
+            <div className="animate-fade-in delay-100" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2rem',
+                marginBottom: '1rem',
+                width: '100%',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <img src="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" alt="Arsenal" style={{ width: '80px', height: '80px' }} />
+                    <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.5rem', color: 'white' }}>ARSENAL</span>
+                </div>
+                
+                <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-gold)', opacity: 0.5 }}>VS</span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <img src="https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg" alt="Man City" style={{ width: '80px', height: '80px' }} />
+                    <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.5rem', color: 'white' }}>MAN CITY</span>
+                </div>
             </div>
 
             <h1 className="animate-fade-in delay-100" style={{
-                fontSize: 'clamp(3rem, 8vw, 6rem)',
+                fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
                 lineHeight: 1.1,
                 marginBottom: '1.5rem',
                 textTransform: 'uppercase'
             }}>
-                Arsenal <br />
-                <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>vs Everton</span>
+                Manchester City <br />
+                <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>vs Arsenal</span>
             </h1>
 
             <div className="animate-fade-in delay-200" style={{
@@ -209,15 +231,15 @@ const Hero = () => {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Clock size={20} color="var(--color-gold)" />
-                    <span style={{ fontSize: '1.125rem' }}>17:30 — Sat 14 Mar</span>
+                    <span style={{ fontSize: '1.125rem' }}>16:30 — Sun 19 Apr</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <MapPin size={20} color="var(--color-gold)" />
-                    <span style={{ fontSize: '1.125rem' }}>Emirates Stadium</span>
+                    <span style={{ fontSize: '1.125rem' }}>Etihad Stadium</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Tv size={20} color="var(--color-gold)" />
-                    <span style={{ fontSize: '1.125rem' }}>Peacock / Sky</span>
+                    <span style={{ fontSize: '1.125rem' }}>Sky Sports / USA</span>
                 </div>
             </div>
 
@@ -227,10 +249,10 @@ const Hero = () => {
                     style={{ padding: '1rem 2rem', fontSize: '1.125rem' }}
                     onClick={() => setShowStream(true)}
                 >
-                    Match Preview
+                    Match Stream
                 </button>
                 <a href="https://www.arsenal.com/tickets" target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ padding: '1rem 2rem', fontSize: '1.125rem', textDecoration: 'none' }}>
-                    Buy Tickets <ChevronRight size={20} />
+                    Tickets <ChevronRight size={20} />
                 </a>
             </div>
         </div>
