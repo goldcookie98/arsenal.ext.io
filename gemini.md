@@ -16,6 +16,7 @@ To create a premium, high-performance Arsenal match tracking dashboard with real
 - [x] Git & GitHub Repository Initialization
 - [x] README & Licensing
 - [x] Man City vs Arsenal Retheme
+- [x] Arsenal vs Newcastle Update
 - [ ] User Notification System
 
 ---
