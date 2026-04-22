@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import UpcomingFixtures from './components/UpcomingFixtures';
 import StandingsWidget from './components/StandingsWidget';
 import LiveMatchWidget from './components/LiveMatchWidget';
+import LiveChat from './components/LiveChat';
 
 function App() {
   return (
@@ -52,6 +53,8 @@ function App() {
           Arsenal<span className="text-gradient">Tracker</span> &copy; 2026. Data is illustrative.
         </p>
       </footer>
+
+      <LiveChat />
     </div>
   );
 }
