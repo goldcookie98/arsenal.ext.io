@@ -9,5 +9,9 @@ service cloud.firestore {
                     && request.resource.data.text.size() <= 500;
       allow delete: if true;
     }
+    match /bans/{nickname} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }

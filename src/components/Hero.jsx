@@ -7,13 +7,13 @@ const Hero = () => {
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, isTime: false });
     const [playerActivated, setPlayerActivated] = useState(false);
 
-    // Set kickoff time (25/04/2026 at 17:30)
+    // Set kickoff time (02/05/2026 at 17:30)
     useEffect(() => {
         const updateTimer = () => {
             const now = new Date();
 
-            // Create a Date object for April 25, 2026 at 17:30
-            const kickoff = new Date(2026, 3, 25, 17, 30, 0, 0); // Month 3 is April
+            // Create a Date object for May 2, 2026 at 17:30
+            const kickoff = new Date(2026, 4, 2, 17, 30, 0, 0); // Month 4 is May
 
             const diff = kickoff - now;
 
@@ -158,7 +158,7 @@ const Hero = () => {
                                 <Lock size={48} color="var(--color-crimson)" style={{ opacity: 0.8 }} />
                                 <h2 style={{ fontSize: '2.5rem', color: 'white' }}>Stream Starts Soon</h2>
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', maxWidth: '500px', margin: '0 auto' }}>
-                                    The live broadcast will automatically unlock right here when the match begins at 17:30 on April 25th.
+                                    The live broadcast will automatically unlock right here when the match begins at 17:30 on May 2nd.
                                 </p>
 
                                 <div style={{
@@ -231,7 +231,7 @@ const Hero = () => {
                     borderRadius: '50%',
                     boxShadow: '0 0 10px var(--color-crimson)'
                 }}></span>
-                Next Match — Sat 25 Apr
+                Premier League · GW35 — Fri 2 May
             </div>
 
             <div className="animate-fade-in delay-100" style={{
@@ -295,7 +295,7 @@ const Hero = () => {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Clock size={20} color="var(--color-gold)" />
-                    <span style={{ fontSize: '1.125rem' }}>17:30 — Sat 25 Apr</span>
+                    <span style={{ fontSize: '1.125rem' }}>17:30 — Fri 2 May</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <MapPin size={20} color="var(--color-gold)" />
