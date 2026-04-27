@@ -25,6 +25,7 @@ const LiveChat = () => {
     useEffect(() => {
         if (!isOpen) return;
 
+        console.log("Subscribing to chat messages...");
         setConnectionStatus('connecting');
         setLastError(null);
 
@@ -34,7 +35,8 @@ const LiveChat = () => {
             limit(100)
         );
 
-        const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            console.log("Received snapshot update, count:", snapshot.size);
             setConnectionStatus('connected');
             const msgs = [];
             snapshot.forEach((doc) => {
@@ -45,7 +47,7 @@ const LiveChat = () => {
                     createdAt: data.createdAt || { seconds: Date.now() / 1000 } 
                 });
             });
-            setMessages(msgs.reverse());
+            setMessages([...msgs].reverse());
             setTimeout(scrollToBottom, 100);
         }, (error) => {
             console.error("Firestore subscription error:", error);
@@ -59,9 +61,15 @@ const LiveChat = () => {
     const handleSendMessage = async (e) => {
         e.preventDefault();
         const messageText = newMessage.trim();
-        if (!messageText || !nickname) return;
+        if (!messageText) return;
+        if (!nickname) {
+            alert("Please set a nickname first!");
+            return;
+        }
 
-        // Clear input immediately for better UX
+        console.log("Attempting to send message:", messageText);
+        
+        // Clear input immediately
         setNewMessage('');
 
         try {
@@ -71,20 +79,37 @@ const LiveChat = () => {
                 isMod: isMod,
                 createdAt: serverTimestamp()
             });
+            console.log("Message sent successfully");
         } catch (error) {
             console.error("Error sending message: ", error);
-            // Optional: restore the message if it failed
-            setNewMessage(messageText);
-            alert("Failed to send message. Please check your connection and Firestore rules.");
+            setNewMessage(messageText); // Restore on error
+            alert("Failed to send: " + error.message);
         }
     };
 
     const handleSetNickname = (e) => {
         e.preventDefault();
-        if (tempNickname.trim()) {
-            setNickname(tempNickname.trim());
-            localStorage.setItem('chat-nickname', tempNickname.trim());
+        const trimmedName = tempNickname.trim();
+        if (trimmedName) {
+            console.log("Setting nickname:", trimmedName);
+            setNickname(trimmedName);
+            try {
+                localStorage.setItem('chat-nickname', trimmedName);
+            } catch (err) {
+                console.error("LocalStorage error:", err);
+            }
         }
+    };
+
+    const handleLogout = () => {
+        setNickname('');
+        try {
+            localStorage.removeItem('chat-nickname');
+            localStorage.removeItem('chat-is-mod');
+        } catch (err) {
+            console.error("LocalStorage error:", err);
+        }
+        setIsMod(false);
     };
 
     const handleModLogin = (e) => {
@@ -171,20 +196,27 @@ const LiveChat = () => {
                     justifyContent: 'space-between'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            background: 'rgba(239, 1, 7, 0.2)',
-                            borderRadius: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid var(--color-crimson)'
-                        }}>
-                            <Users size={18} color="var(--color-crimson)" />
+                        <div 
+                            onClick={nickname ? handleLogout : undefined}
+                            title={nickname ? "Click to change nickname" : "Join the chat"}
+                            style={{
+                                width: '36px',
+                                height: '36px',
+                                background: 'rgba(239, 1, 7, 0.2)',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '1px solid var(--color-crimson)',
+                                cursor: nickname ? 'pointer' : 'default'
+                            }}
+                        >
+                            {nickname ? <X size={18} color="var(--color-crimson)" /> : <Users size={18} color="var(--color-crimson)" />}
                         </div>
                         <div>
-                            <h3 style={{ fontSize: '0.95rem', color: 'white', margin: 0, fontWeight: 700 }}>Match Chat</h3>
+                            <h3 style={{ fontSize: '0.95rem', color: 'white', margin: 0, fontWeight: 700 }}>
+                                {nickname ? nickname : 'Match Chat'}
+                            </h3>
                             <span style={{ fontSize: '0.7rem', color: connectionStatus === 'connected' ? '#4ade80' : connectionStatus === 'error' ? '#ef4444' : '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <span style={{ 
                                     width: '6px', 
@@ -193,7 +225,7 @@ const LiveChat = () => {
                                     borderRadius: '50%',
                                     boxShadow: `0 0 5px ${connectionStatus === 'connected' ? '#4ade80' : connectionStatus === 'error' ? '#ef4444' : '#fbbf24'}`
                                 }}></span>
-                                {connectionStatus === 'connected' ? `${messages.length} messages` : connectionStatus === 'error' ? 'Connection Error' : 'Connecting...'}
+                                {connectionStatus === 'connected' ? `${messages.length} messages` : connectionStatus === 'error' ? 'Sync Error' : 'Connecting...'}
                             </span>
                         </div>
                     </div>
