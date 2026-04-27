@@ -39,10 +39,10 @@ const LiveMatchWidget = () => {
                 {timeLeft.isTime ? (
                     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                         <iframe
-                            title="Arsenal vs. Newcastle United Player"
+                            title="Arsenal vs. Fulham Player"
                             marginHeight="0"
                             marginWidth="0"
-                            src="https://embedsports.top/embed/admin/ppv-arsenal-vs-newcastle-united/1"
+                            src="https://embedsports.top/embed/admin/ppv-arsenal-vs-fulham/1"
                             scrolling="no"
                             allowFullScreen={true}
                             allow="encrypted-media; picture-in-picture;"

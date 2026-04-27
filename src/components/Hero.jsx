@@ -100,9 +100,9 @@ const Hero = () => {
                         {timeLeft.isTime ? (
                             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                 <iframe
-                                    title="Arsenal vs. Newcastle United Player"
+                                    title="Arsenal vs. Fulham Player"
                                     style={{ width: '100%', height: '100%', border: 'none' }}
-                                    src="https://embedsports.top/embed/admin/ppv-arsenal-vs-newcastle-united/1"
+                                    src="https://embedsports.top/embed/admin/ppv-arsenal-vs-fulham/1"
                                     scrolling="no"
                                     allowFullScreen={true}
                                     allow="encrypted-media; picture-in-picture;"
@@ -270,8 +270,8 @@ const Hero = () => {
                     gap: '1.5rem',
                     filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.2))'
                 }}>
-                    <img src="https://upload.wikimedia.org/wikipedia/en/5/56/Newcastle_United_Logo.svg" alt="Newcastle" style={{ width: 'clamp(120px, 15vw, 220px)', height: 'auto' }} />
-                    <span style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: '2rem', color: 'white', letterSpacing: '0.1em' }}>NEWCASTLE</span>
+                    <img src="https://upload.wikimedia.org/wikipedia/en/e/eb/Fulham_FC_%28shield%29.svg" alt="Fulham" style={{ width: 'clamp(120px, 15vw, 220px)', height: 'auto' }} />
+                    <span style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: '2rem', color: 'white', letterSpacing: '0.1em' }}>FULHAM</span>
                 </div>
             </div>
 
@@ -282,7 +282,7 @@ const Hero = () => {
                 textTransform: 'uppercase'
             }}>
                 Arsenal <br />
-                <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>vs Newcastle</span>
+                <span className="text-gradient" style={{ whiteSpace: 'nowrap' }}>vs Fulham</span>
             </h1>
 
             <div className="animate-fade-in delay-200" style={{
