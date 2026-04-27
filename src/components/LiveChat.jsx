@@ -82,8 +82,13 @@ const LiveChat = () => {
             console.log("Message sent successfully");
         } catch (error) {
             console.error("Error sending message: ", error);
-            setNewMessage(messageText); // Restore on error
-            alert("Failed to send: " + error.message);
+            // Don't restore the message if it's a block error, as it's confusing
+            if (error.message.includes('blocked') || error.code === 'unavailable') {
+                alert("Message could not reach the server. Please check if an ad-blocker is blocking 'firestore.googleapis.com'.");
+            } else {
+                setNewMessage(messageText);
+                alert("Failed to send: " + error.message);
+            }
         }
     };
 
@@ -196,8 +201,8 @@ const LiveChat = () => {
                     justifyContent: 'space-between'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div 
-                            onClick={nickname ? handleLogout : undefined}
+                        <button 
+                            onClick={handleLogout}
                             title={nickname ? "Click to change nickname" : "Join the chat"}
                             style={{
                                 width: '36px',
@@ -208,11 +213,12 @@ const LiveChat = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 border: '1px solid var(--color-crimson)',
-                                cursor: nickname ? 'pointer' : 'default'
+                                cursor: 'pointer',
+                                padding: 0
                             }}
                         >
                             {nickname ? <X size={18} color="var(--color-crimson)" /> : <Users size={18} color="var(--color-crimson)" />}
-                        </div>
+                        </button>
                         <div>
                             <h3 style={{ fontSize: '0.95rem', color: 'white', margin: 0, fontWeight: 700 }}>
                                 {nickname ? nickname : 'Match Chat'}
@@ -282,13 +288,15 @@ const LiveChat = () => {
                     {/* Messages List - Always visible to show history */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {connectionStatus === 'error' ? (
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#ef4444', padding: '1rem', textAlign: 'center' }}>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#ef4444', padding: '2rem', textAlign: 'center' }}>
                                 <Shield size={32} style={{ marginBottom: '1rem' }} />
-                                <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Sync Error</p>
-                                <p style={{ fontSize: '0.75rem', opacity: 0.8 }}>{lastError}</p>
+                                <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Sync Blocked</p>
+                                <p style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '1.5rem' }}>
+                                    It looks like your browser or an ad-blocker is blocking the connection to Google Firestore.
+                                </p>
                                 <button 
                                     onClick={() => window.location.reload()}
-                                    style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
+                                    style={{ background: 'var(--color-crimson)', border: 'none', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                                 >
                                     Retry Connection
                                 </button>
