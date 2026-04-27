@@ -13,6 +13,8 @@ const LiveChat = () => {
     const [showModLogin, setShowModLogin] = useState(false);
     const [modUsername, setModUsername] = useState('');
     const [modPassword, setModPassword] = useState('');
+    const [connectionStatus, setConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'error'
+    const [lastError, setLastError] = useState(null);
 
     const messagesEndRef = useRef(null);
 
@@ -23,6 +25,9 @@ const LiveChat = () => {
     useEffect(() => {
         if (!isOpen) return;
 
+        setConnectionStatus('connecting');
+        setLastError(null);
+
         const q = query(
             collection(db, 'messages'),
             orderBy('createdAt', 'desc'),
@@ -30,6 +35,7 @@ const LiveChat = () => {
         );
 
         const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+            setConnectionStatus('connected');
             const msgs = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
@@ -39,11 +45,12 @@ const LiveChat = () => {
                     createdAt: data.createdAt || { seconds: Date.now() / 1000 } 
                 });
             });
-            // Reverse to show oldest at top, newest at bottom
             setMessages(msgs.reverse());
             setTimeout(scrollToBottom, 100);
         }, (error) => {
             console.error("Firestore subscription error:", error);
+            setConnectionStatus('error');
+            setLastError(error.message);
         });
 
         return () => unsubscribe();
@@ -178,9 +185,15 @@ const LiveChat = () => {
                         </div>
                         <div>
                             <h3 style={{ fontSize: '0.95rem', color: 'white', margin: 0, fontWeight: 700 }}>Match Chat</h3>
-                            <span style={{ fontSize: '0.7rem', color: '#4ade80', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <span style={{ width: '5px', height: '5px', background: '#4ade80', borderRadius: '50%' }}></span>
-                                {messages.length > 0 ? `${messages.length} messages active` : 'Live'}
+                            <span style={{ fontSize: '0.7rem', color: connectionStatus === 'connected' ? '#4ade80' : connectionStatus === 'error' ? '#ef4444' : '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span style={{ 
+                                    width: '6px', 
+                                    height: '6px', 
+                                    background: connectionStatus === 'connected' ? '#4ade80' : connectionStatus === 'error' ? '#ef4444' : '#fbbf24', 
+                                    borderRadius: '50%',
+                                    boxShadow: `0 0 5px ${connectionStatus === 'connected' ? '#4ade80' : connectionStatus === 'error' ? '#ef4444' : '#fbbf24'}`
+                                }}></span>
+                                {connectionStatus === 'connected' ? `${messages.length} messages` : connectionStatus === 'error' ? 'Connection Error' : 'Connecting...'}
                             </span>
                         </div>
                     </div>
@@ -236,9 +249,25 @@ const LiveChat = () => {
 
                     {/* Messages List - Always visible to show history */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {messages.length === 0 ? (
+                        {connectionStatus === 'error' ? (
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#ef4444', padding: '1rem', textAlign: 'center' }}>
+                                <Shield size={32} style={{ marginBottom: '1rem' }} />
+                                <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Sync Error</p>
+                                <p style={{ fontSize: '0.75rem', opacity: 0.8 }}>{lastError}</p>
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
+                                >
+                                    Retry Connection
+                                </button>
+                            </div>
+                        ) : messages.length === 0 && connectionStatus === 'connected' ? (
                             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                                 No messages yet. Be the first!
+                            </div>
+                        ) : connectionStatus === 'connecting' ? (
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                Loading chat...
                             </div>
                         ) : (
                             messages.map((msg) => (
