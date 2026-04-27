@@ -17,6 +17,8 @@ const LiveChat = () => {
     const [lastError, setLastError] = useState(null);
 
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
+    const [isSending, setIsSending] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,17 +62,30 @@ const LiveChat = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
+        e.stopPropagation();
+        
         const messageText = newMessage.trim();
-        if (!messageText) return;
+        if (!messageText || isSending) return;
         if (!nickname) {
             alert("Please set a nickname first!");
             return;
         }
 
-        console.log("Attempting to send message:", messageText);
+        console.log("Nuclear Send started:", messageText);
+        setIsSending(true);
         
-        // Clear input immediately
+        // 1. Clear State
         setNewMessage('');
+        
+        // 2. Clear Ref (Direct DOM)
+        if (inputRef.current) {
+            inputRef.current.value = '';
+        }
+
+        // 3. Native Reset
+        try {
+            e.target.reset();
+        } catch (err) {}
 
         try {
             await addDoc(collection(db, 'messages'), {
@@ -79,16 +94,17 @@ const LiveChat = () => {
                 isMod: isMod,
                 createdAt: serverTimestamp()
             });
-            console.log("Message sent successfully");
+            console.log("Nuclear Send success");
         } catch (error) {
-            console.error("Error sending message: ", error);
-            // Don't restore the message if it's a block error, as it's confusing
-            if (error.message.includes('blocked') || error.code === 'unavailable') {
-                alert("Message could not reach the server. Please check if an ad-blocker is blocking 'firestore.googleapis.com'.");
-            } else {
+            console.error("Nuclear Send error: ", error);
+            // Only restore if it's NOT a blocked error
+            if (!error.message.includes('blocked') && error.code !== 'unavailable') {
                 setNewMessage(messageText);
-                alert("Failed to send: " + error.message);
+                if (inputRef.current) inputRef.current.value = messageText;
             }
+            alert("Failed to send: " + error.message);
+        } finally {
+            setIsSending(false);
         }
     };
 
@@ -361,12 +377,14 @@ const LiveChat = () => {
                             </form>
                         </div>
                     ) : (
-                        <form onSubmit={handleSendMessage} style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: '0.75rem' }}>
+                        <form onSubmit={handleSendMessage} style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: '0.75rem', position: 'relative' }}>
                             <input 
+                                ref={inputRef}
                                 type="text" 
-                                placeholder="Type a message..." 
+                                placeholder={isSending ? "Sending..." : "Type a message..."}
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
+                                disabled={isSending}
                                 style={{ 
                                     flex: 1, 
                                     padding: '0.75rem 1rem', 
@@ -375,11 +393,13 @@ const LiveChat = () => {
                                     border: '1px solid var(--border-glass)', 
                                     color: '#ffffff',
                                     outline: 'none',
-                                    fontSize: '0.9rem'
+                                    fontSize: '0.9rem',
+                                    opacity: isSending ? 0.6 : 1
                                 }}
                             />
                             <button 
                                 type="submit" 
+                                disabled={isSending || !newMessage.trim()}
                                 style={{ 
                                     width: '44px', 
                                     height: '44px', 
@@ -390,11 +410,13 @@ const LiveChat = () => {
                                     alignItems: 'center', 
                                     justifyContent: 'center', 
                                     border: 'none', 
-                                    cursor: 'pointer',
-                                    boxShadow: '0 4px 10px var(--glow-crimson)'
+                                    cursor: isSending ? 'default' : 'pointer',
+                                    boxShadow: '0 4px 10px var(--glow-crimson)',
+                                    opacity: isSending || !newMessage.trim() ? 0.5 : 1,
+                                    transition: 'all 0.2s ease'
                                 }}
                             >
-                                <Send size={20} />
+                                <Send size={20} className={isSending ? 'animate-pulse' : ''} />
                             </button>
                         </form>
                     )}
