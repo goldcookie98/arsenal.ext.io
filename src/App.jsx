@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import UpcomingFixtures from './components/UpcomingFixtures';
 import StandingsWidget from './components/StandingsWidget';
 import LiveMatchWidget from './components/LiveMatchWidget';
 import LiveChat from './components/LiveChat';
+import DankOverlay from './components/DankOverlay';
 
 function App() {
+  const [isDank, setIsDank] = useState(false);
+
   return (
     <div style={{ paddingBottom: '4rem', position: 'relative' }}>
       <div className="background-wrapper" />
-      <Navbar />
+      <DankOverlay isDank={isDank} />
+      <Navbar isDank={isDank} toggleDank={() => setIsDank(d => !d)} />
 
       <main>
-        <Hero />
+        <Hero isDank={isDank} />
 
-        {/* Live Match Widget - full width at top */}
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto 2rem',
@@ -24,7 +27,6 @@ function App() {
           <LiveMatchWidget />
         </div>
 
-        {/* Two column layout for desktop */}
         <div className="content-grid" style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -50,7 +52,10 @@ function App() {
         color: 'var(--text-muted)'
       }}>
         <p style={{ fontFamily: 'Outfit', fontWeight: 600 }}>
-          Arsenal<span className="text-gradient">Tracker</span> &copy; 2026. Data is illustrative.
+          {isDank
+            ? <span style={{ color: '#39FF14', textShadow: '0 0 10px #39FF14' }}>🐸 DANK MODE ACTIVATED — MUCH WOW © 420 🐸</span>
+            : <>Arsenal<span className="text-gradient">Tracker</span> &copy; 2026. Data is illustrative.</>
+          }
         </p>
       </footer>
 
