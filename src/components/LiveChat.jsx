@@ -17,7 +17,6 @@ const LiveChat = () => {
     const [lastError, setLastError] = useState(null);
 
     const messagesEndRef = useRef(null);
-    const inputRef = useRef(null);
     const [isSending, setIsSending] = useState(false);
 
     const scrollToBottom = () => {
@@ -62,8 +61,7 @@ const LiveChat = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        e.stopPropagation();
-        
+
         const messageText = newMessage.trim();
         if (!messageText || isSending) return;
         if (!nickname) {
@@ -71,21 +69,8 @@ const LiveChat = () => {
             return;
         }
 
-        console.log("Nuclear Send started:", messageText);
         setIsSending(true);
-        
-        // 1. Clear State
         setNewMessage('');
-        
-        // 2. Clear Ref (Direct DOM)
-        if (inputRef.current) {
-            inputRef.current.value = '';
-        }
-
-        // 3. Native Reset
-        try {
-            e.target.reset();
-        } catch (err) {}
 
         try {
             await addDoc(collection(db, 'messages'), {
@@ -94,14 +79,9 @@ const LiveChat = () => {
                 isMod: isMod,
                 createdAt: serverTimestamp()
             });
-            console.log("Nuclear Send success");
         } catch (error) {
-            console.error("Nuclear Send error: ", error);
-            // Only restore if it's NOT a blocked error
-            if (!error.message.includes('blocked') && error.code !== 'unavailable') {
-                setNewMessage(messageText);
-                if (inputRef.current) inputRef.current.value = messageText;
-            }
+            console.error("Send error: ", error);
+            setNewMessage(messageText);
             alert("Failed to send: " + error.message);
         } finally {
             setIsSending(false);
@@ -378,9 +358,8 @@ const LiveChat = () => {
                         </div>
                     ) : (
                         <form onSubmit={handleSendMessage} style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: '0.75rem', position: 'relative' }}>
-                            <input 
-                                ref={inputRef}
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder={isSending ? "Sending..." : "Type a message..."}
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
