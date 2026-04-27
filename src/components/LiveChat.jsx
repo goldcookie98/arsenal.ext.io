@@ -25,17 +25,25 @@ const LiveChat = () => {
 
         const q = query(
             collection(db, 'messages'),
-            orderBy('createdAt', 'asc'),
+            orderBy('createdAt', 'desc'),
             limit(100)
         );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
             const msgs = [];
             snapshot.forEach((doc) => {
-                msgs.push({ id: doc.id, ...doc.data() });
+                const data = doc.data();
+                msgs.push({ 
+                    id: doc.id, 
+                    ...data,
+                    createdAt: data.createdAt || { seconds: Date.now() / 1000 } 
+                });
             });
-            setMessages(msgs);
+            // Reverse to show oldest at top, newest at bottom
+            setMessages(msgs.reverse());
             setTimeout(scrollToBottom, 100);
+        }, (error) => {
+            console.error("Firestore subscription error:", error);
         });
 
         return () => unsubscribe();
@@ -43,18 +51,24 @@ const LiveChat = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !nickname) return;
+        const messageText = newMessage.trim();
+        if (!messageText || !nickname) return;
+
+        // Clear input immediately for better UX
+        setNewMessage('');
 
         try {
             await addDoc(collection(db, 'messages'), {
-                text: newMessage,
+                text: messageText,
                 sender: nickname,
                 isMod: isMod,
                 createdAt: serverTimestamp()
             });
-            setNewMessage('');
         } catch (error) {
             console.error("Error sending message: ", error);
+            // Optional: restore the message if it failed
+            setNewMessage(messageText);
+            alert("Failed to send message. Please check your connection and Firestore rules.");
         }
     };
 
@@ -220,100 +234,100 @@ const LiveChat = () => {
                         </div>
                     )}
 
-                    {!nickname ? (
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
-                            <div style={{ width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                                <LogIn size={30} color="var(--color-gold)" />
+                    {/* Messages List - Always visible to show history */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {messages.length === 0 ? (
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                No messages yet. Be the first!
                             </div>
-                            <h4 style={{ color: 'white', marginBottom: '0.5rem' }}>Join the Conversation</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Pick a nickname to start chatting with other Gooners.</p>
+                        ) : (
+                            messages.map((msg) => (
+                                <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.sender === nickname ? 'flex-end' : 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: msg.isMod ? 'var(--color-crimson)' : 'var(--color-gold)' }}>
+                                            {msg.isMod && '🛡️ '}{msg.sender}
+                                        </span>
+                                        {isMod && (
+                                            <button 
+                                                onClick={() => deleteMessage(msg.id)}
+                                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.6rem', padding: 0 }}
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div style={{ 
+                                        padding: '0.75rem 1rem', 
+                                        borderRadius: '16px', 
+                                        borderTopRightRadius: msg.sender === nickname ? '4px' : '16px',
+                                        borderTopLeftRadius: msg.sender === nickname ? '16px' : '4px',
+                                        background: msg.sender === nickname ? 'var(--color-crimson)' : 'rgba(255,255,255,0.05)',
+                                        color: 'white',
+                                        maxWidth: '85%',
+                                        fontSize: '0.9rem',
+                                        boxShadow: msg.sender === nickname ? '0 4px 15px rgba(239, 1, 7, 0.2)' : 'none'
+                                    }}>
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Interaction Area (Join or Type) */}
+                    {!nickname ? (
+                        <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--border-glass)', textAlign: 'center' }}>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1rem' }}>Pick a nickname to join the chat</p>
                             <form onSubmit={handleSetNickname} style={{ width: '100%', display: 'flex', gap: '0.5rem' }}>
                                 <input 
                                     type="text" 
-                                    placeholder="Your nickname..." 
+                                    placeholder="Nickname..." 
                                     value={tempNickname}
                                     onChange={(e) => setTempNickname(e.target.value)}
                                     maxLength={20}
-                                    style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white', outline: 'none' }}
+                                    style={{ flex: 1, padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white', outline: 'none', fontSize: '0.85rem' }}
                                 />
-                                <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1.25rem' }}>Join</button>
+                                <button type="submit" className="btn-primary" style={{ padding: '0.6rem 1rem', fontSize: '0.85rem' }}>Join</button>
                             </form>
                         </div>
                     ) : (
-                        <>
-                            {/* Messages List */}
-                            <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {messages.map((msg) => (
-                                    <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.sender === nickname ? 'flex-end' : 'flex-start' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: msg.isMod ? 'var(--color-crimson)' : 'var(--color-gold)' }}>
-                                                {msg.isMod && '🛡️ '}{msg.sender}
-                                            </span>
-                                            {isMod && (
-                                                <button 
-                                                    onClick={() => deleteMessage(msg.id)}
-                                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.6rem', padding: 0 }}
-                                                >
-                                                    Delete
-                                                </button>
-                                            )}
-                                        </div>
-                                        <div style={{ 
-                                            padding: '0.75rem 1rem', 
-                                            borderRadius: '16px', 
-                                            borderTopRightRadius: msg.sender === nickname ? '4px' : '16px',
-                                            borderTopLeftRadius: msg.sender === nickname ? '16px' : '4px',
-                                            background: msg.sender === nickname ? 'var(--color-crimson)' : 'rgba(255,255,255,0.05)',
-                                            color: 'white',
-                                            maxWidth: '85%',
-                                            fontSize: '0.9rem',
-                                            boxShadow: msg.sender === nickname ? '0 4px 15px rgba(239, 1, 7, 0.2)' : 'none'
-                                        }}>
-                                            {msg.text}
-                                        </div>
-                                    </div>
-                                ))}
-                                <div ref={messagesEndRef} />
-                            </div>
-
-                            {/* Message Input */}
-                            <form onSubmit={handleSendMessage} style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: '0.75rem' }}>
-                                <input 
-                                    type="text" 
-                                    placeholder="Type a message..." 
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    style={{ 
-                                        flex: 1, 
-                                        padding: '0.75rem 1rem', 
-                                        borderRadius: '12px', 
-                                        background: 'rgba(255,255,255,0.08)', 
-                                        border: '1px solid var(--border-glass)', 
-                                        color: '#ffffff', // FORCE WHITE TEXT AS REQUESTED
-                                        outline: 'none',
-                                        fontSize: '0.9rem'
-                                    }}
-                                />
-                                <button 
-                                    type="submit" 
-                                    style={{ 
-                                        width: '44px', 
-                                        height: '44px', 
-                                        borderRadius: '12px', 
-                                        background: 'var(--color-crimson)', 
-                                        color: 'white', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center', 
-                                        border: 'none', 
-                                        cursor: 'pointer',
-                                        boxShadow: '0 4px 10px var(--glow-crimson)'
-                                    }}
-                                >
-                                    <Send size={20} />
-                                </button>
-                            </form>
-                        </>
+                        <form onSubmit={handleSendMessage} style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: '0.75rem' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Type a message..." 
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                style={{ 
+                                    flex: 1, 
+                                    padding: '0.75rem 1rem', 
+                                    borderRadius: '12px', 
+                                    background: 'rgba(255,255,255,0.08)', 
+                                    border: '1px solid var(--border-glass)', 
+                                    color: '#ffffff',
+                                    outline: 'none',
+                                    fontSize: '0.9rem'
+                                }}
+                            />
+                            <button 
+                                type="submit" 
+                                style={{ 
+                                    width: '44px', 
+                                    height: '44px', 
+                                    borderRadius: '12px', 
+                                    background: 'var(--color-crimson)', 
+                                    color: 'white', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    border: 'none', 
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 10px var(--glow-crimson)'
+                                }}
+                            >
+                                <Send size={20} />
+                            </button>
+                        </form>
                     )}
                 </div>
             </div>
