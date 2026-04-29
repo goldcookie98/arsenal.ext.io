@@ -114,6 +114,10 @@ const LiveChat = () => {
     };
 
     const handleLogout = () => {
+        if (banStatus && banStatus > Date.now()) {
+            alert('You cannot change your name while you are banned.');
+            return;
+        }
         setNickname('');
         localStorage.removeItem('chat-nickname');
         localStorage.removeItem('chat-is-mod');
@@ -200,12 +204,15 @@ const LiveChat = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <button
                             onClick={handleLogout}
-                            title={nickname ? 'Click to change nickname' : 'Join the chat'}
+                            title={nickname ? (banStatus && banStatus > Date.now() ? 'Name change disabled while banned' : 'Click to change nickname') : 'Join the chat'}
                             style={{
                                 width: '36px', height: '36px',
                                 background: 'rgba(239, 1, 7, 0.2)', borderRadius: '10px',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                border: '1px solid var(--color-crimson)', cursor: 'pointer', padding: 0
+                                border: '1px solid var(--color-crimson)', 
+                                cursor: (banStatus && banStatus > Date.now()) ? 'not-allowed' : 'pointer', 
+                                padding: 0,
+                                opacity: (banStatus && banStatus > Date.now()) ? 0.5 : 1
                             }}
                         >
                             {nickname ? <X size={18} color="var(--color-crimson)" /> : <Users size={18} color="var(--color-crimson)" />}
